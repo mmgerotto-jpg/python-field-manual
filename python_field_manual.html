@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Python Field Manual</title>
+<style>
+  :root{
+    --paper: #F3F0E6;
+    --paper-line: #D9D2BE;
+    --ink: #1B2A4A;
+    --ink-soft: #46567A;
+    --gold: #C08A17;
+    --teal: #2E7D6B;
+    --charcoal: #2B2B26;
+    --red-tab: #A3402E;
+    --white: #FDFCF8;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color:var(--charcoal);
+    font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{ font-family:'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+
+  .wrap{ max-width: 1080px; margin:0 auto; padding: 28px 20px 60px; }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex; justify-content:space-between; align-items:flex-end;
+    border-bottom: 3px solid var(--ink);
+    padding-bottom:16px; margin-bottom: 22px; gap: 24px; flex-wrap:wrap;
+  }
+  .title-block .eyebrow{
+    font-family:'SFMono-Regular', Consolas, monospace;
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--red-tab); margin-bottom:6px;
+  }
+  .title-block h1{
+    margin:0; font-size:34px; color:var(--ink); font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .title-block p{
+    margin:6px 0 0; color:var(--ink-soft); font-size:14.5px; max-width:520px;
+  }
+
+  /* Gauge signature element */
+  .gauge{
+    display:flex; flex-direction:column; align-items:center; gap:6px; min-width:150px;
+  }
+  .gauge-label{
+    font-family:'SFMono-Regular', Consolas, monospace; font-size:10.5px;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft);
+  }
+  .dial{ width:130px; height:70px; position:relative; }
+  .dial svg{ width:100%; height:100%; display:block; }
+  .dial-value{
+    position:absolute; bottom:0; left:0; right:0; text-align:center;
+    font-family:'SFMono-Regular', Consolas, monospace; font-weight:700;
+    font-size:20px; color:var(--ink);
+  }
+
+  /* ---------- Layout ---------- */
+  .layout{ display:grid; grid-template-columns: 220px 1fr; gap: 24px; align-items:start; }
+  @media (max-width: 760px){ .layout{ grid-template-columns: 1fr; } }
+
+  /* ---------- Tabs (notebook divider style) ---------- */
+  .tabs{ display:flex; flex-direction:column; gap:2px; position:sticky; top:20px; }
+  .tab{
+    background:var(--white);
+    border:1px solid var(--ink);
+    border-right: 8px solid var(--ink);
+    padding:12px 14px;
+    cursor:pointer;
+    font-family:'SFMono-Regular', Consolas, monospace;
+    font-size:12.5px;
+    color:var(--ink);
+    display:flex; justify-content:space-between; align-items:center;
+    transition: transform .12s ease, border-right-color .12s ease;
+  }
+  .tab .pct{ color:var(--ink-soft); font-size:11px; }
+  .tab:hover{ transform: translateX(2px); }
+  .tab.active{
+    background:var(--ink); color:var(--white); border-right-color: var(--gold);
+  }
+  .tab.active .pct{ color: #D9D2BE; }
+  .tab.done{ border-right-color: var(--teal); }
+  .tab.done.active{ border-right-color: var(--gold); }
+
+  /* ---------- Page panel ---------- */
+  .page{
+    background:var(--white);
+    border:1px solid var(--ink);
+    padding: 26px 30px 30px;
+    min-height: 420px;
+    position:relative;
+  }
+  .page::before{
+    content:"";
+    position:absolute; left:0; top:0; bottom:0; width:34px;
+    background: repeating-linear-gradient(
+      to bottom, transparent 0 20px, var(--paper-line) 20px 21px
+    );
+    border-right:1px solid var(--paper-line);
+  }
+  .page-inner{ margin-left: 34px; padding-left: 20px; }
+
+  .phase-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    border-bottom: 2px dashed var(--paper-line); padding-bottom: 10px; margin-bottom: 18px;
+    flex-wrap:wrap; gap:8px;
+  }
+  .phase-head h2{ margin:0; color:var(--ink); font-size:22px; }
+  .phase-head .when{
+    font-family:'SFMono-Regular', Consolas, monospace; font-size:12px; color:var(--red-tab);
+  }
+  .phase-intro{ color:var(--ink-soft); font-size:14.5px; margin: 0 0 18px; max-width: 680px; }
+
+  .day-block{ margin-bottom: 22px; }
+  .day-head{
+    font-family:'SFMono-Regular', Consolas, monospace;
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--teal); margin-bottom:8px; display:flex; align-items:center; gap:8px;
+  }
+  .day-head::after{ content:""; flex:1; height:1px; background:var(--paper-line); }
+
+  .item{
+    display:flex; align-items:flex-start; gap:10px; padding:7px 4px;
+    border-bottom:1px solid #F0EDE3;
+  }
+  .item:last-child{ border-bottom:none; }
+  .item input[type=checkbox]{
+    appearance:none; -webkit-appearance:none;
+    width:17px; height:17px; min-width:17px; margin-top:2px;
+    border:1.5px solid var(--ink); background:var(--white); cursor:pointer;
+    position:relative; border-radius:2px;
+  }
+  .item input[type=checkbox]:checked{ background:var(--teal); border-color:var(--teal); }
+  .item input[type=checkbox]:checked::after{
+    content:"✓"; position:absolute; top:-3px; left:2px; color:var(--white); font-size:12px; font-weight:bold;
+  }
+  .item label{ font-size:15px; line-height:1.45; cursor:pointer; }
+  .item.checked label{ color:#9A9689; text-decoration: line-through; text-decoration-color:#C7C2B2; }
+  .item .res{
+    display:block; margin-top:3px; font-size:12.5px;
+  }
+  .item .res a{ color:var(--red-tab); text-decoration:none; border-bottom:1px dotted var(--red-tab); }
+  .item .res a:hover{ color:var(--gold); border-bottom-color:var(--gold); }
+
+  .skip-box{
+    margin-top:20px; padding:14px 16px; background:#FBF7EC; border:1px dashed var(--gold);
+    font-size:13.5px; color:#6B5313;
+  }
+  .skip-box b{ color:var(--red-tab); }
+
+  footer{
+    margin-top:26px; text-align:center; font-family:'SFMono-Regular',Consolas,monospace;
+    font-size:11px; color:var(--ink-soft); letter-spacing:.08em;
+  }
+  .reset-btn{
+    background:none; border:1px solid var(--ink-soft); color:var(--ink-soft);
+    font-family:'SFMono-Regular',Consolas,monospace; font-size:11px;
+    padding:5px 10px; cursor:pointer; border-radius:3px; margin-top:8px;
+  }
+  .reset-btn:hover{ border-color:var(--red-tab); color:var(--red-tab); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="title-block">
+      <div class="eyebrow">Field Manual — No. 01</div>
+      <h1>Python for Data Analysis</h1>
+      <p>An accelerated route from zero to "dangerous enough to be useful at work." Check items off as you complete them — your place is saved.</p>
+    </div>
+    <div class="gauge">
+      <div class="gauge-label">Overall progress</div>
+      <div class="dial">
+        <svg viewBox="0 0 130 70">
+          <path d="M 8 65 A 57 57 0 0 1 122 65" fill="none" stroke="#E3DDC9" stroke-width="10" stroke-linecap="round"/>
+          <path id="dialArc" d="M 8 65 A 57 57 0 0 1 122 65" fill="none" stroke="#C08A17" stroke-width="10" stroke-linecap="round" stroke-dasharray="179" stroke-dashoffset="179"/>
+        </svg>
+        <div class="dial-value" id="dialValue">0%</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="tabs" id="tabs"></div>
+    <div class="page">
+      <div class="page-inner" id="pageContent"></div>
+    </div>
+  </div>
+
+  <footer>
+    Progress stored locally to this app · <button class="reset-btn" id="resetBtn">Reset all checkmarks</button>
+  </footer>
+</div>
+
+<script>
+const DATA = [
+  {
+    id: "p0",
+    label: "Phase 0",
+    title: "Setup",
+    when: "Day 1 · ~1 hr",
+    intro: "Get the toolchain installed before touching syntax. This is a one-time cost.",
+    days: [
+      { head: "Setup", items: [
+        { t: "Install Homebrew (Mac package manager)" },
+        { t: "Install Miniconda (Python + package manager)", r: {label:"anaconda.com/download", url:"https://www.anaconda.com/download"} },
+        { t: "Install VS Code + Python extension", r: {label:"code.visualstudio.com", url:"https://code.visualstudio.com/"} },
+        { t: "Install JupyterLab: pip install jupyterlab notebook" },
+        { t: "Create a project folder, e.g. ~/python-learning" },
+      ]}
+    ]
+  },
+  {
+    id: "p1",
+    label: "Phase 1",
+    title: "Core Syntax",
+    when: "Days 2–6 · ~1.5 hrs/day",
+    intro: "Goal: read and write basic Python without panic. This is the only 'generic programming' phase — keep it brisk.",
+    days: [
+      { head: "Day 2", items: [
+        { t: "Variables & data types: int, float, str, bool" },
+        { t: "Basic operators, print()" },
+      ]},
+      { head: "Day 3", items: [
+        { t: "Lists, dictionaries, tuples, sets — the backbone of everything" },
+      ]},
+      { head: "Day 4", items: [
+        { t: "Control flow: if / elif / else" },
+        { t: "for loops, while loops" },
+      ]},
+      { head: "Day 5", items: [
+        { t: "Functions (def), arguments, return values" },
+        { t: "Importing libraries" },
+      ]},
+      { head: "Day 6", items: [
+        { t: "File I/O basics (reading a CSV/text file)" },
+        { t: "Error handling: try / except" },
+      ]},
+      { head: "Resources", items: [
+        { t: "Python for Everybody (Dr. Chuck) — built for non-CS people", r:{label:"freecodecamp.org", url:"https://www.freecodecamp.org/"} },
+        { t: "Automate the Boring Stuff with Python — practical, not academic", r:{label:"automatetheboringstuff.com", url:"https://automatetheboringstuff.com/"} },
+        { t: "Practice drills", r:{label:"exercism.io — Python track", url:"https://exercism.org/tracks/python"} },
+      ]},
+    ]
+  },
+  {
+    id: "p2",
+    label: "Phase 2",
+    title: "The Data Stack",
+    when: "Days 7–16 · ~2 hrs/day",
+    intro: "This is where Python becomes YOUR tool, not generic programming. Three libraries cover ~90% of daily analyst work.",
+    days: [
+      { head: "Days 7–11 · Pandas (your Excel replacement)", items: [
+        { t: "DataFrames and Series — the core objects" },
+        { t: "Reading data: pd.read_csv(), pd.read_excel(), pd.read_sql()" },
+        { t: "Filtering, sorting, grouping (.groupby()), pivoting" },
+        { t: "Merging/joining: .merge(), .concat()" },
+        { t: "Missing data: .dropna(), .fillna()" },
+        { t: "Aggregations: .mean(), .sum(), .describe()" },
+        { t: "Watch: Kevin Markham's pandas videos", r:{label:"YouTube — Data School", url:"https://www.youtube.com/c/dataschool"} },
+        { t: "Read: 10 minutes to pandas", r:{label:"pandas.pydata.org", url:"https://pandas.pydata.org/docs/user_guide/10min.html"} },
+      ]},
+      { head: "Day 12 · NumPy (light touch)", items: [
+        { t: "Arrays, vectorized operations, basic stats functions" },
+      ]},
+      { head: "Days 13–14 · Visualization", items: [
+        { t: "Matplotlib: bar, line, scatter, histogram" },
+        { t: "Seaborn: prettier statistical plots, less code" },
+      ]},
+      { head: "Days 15–16 · SQL bridge", items: [
+        { t: "sqlalchemy or pandasql to query DBs directly into DataFrames" },
+        { t: "(If SQL is new to you, budget a separate 3–4 day parallel track)" },
+      ]},
+    ]
+  },
+  {
+    id: "p3",
+    label: "Phase 3",
+    title: "Training Data",
+    when: "Use throughout — not sequential",
+    intro: "Never learn syntax in a vacuum. Apply every new concept to a realistic dataset immediately.",
+    days: [
+      { head: "Sources", items: [
+        { t: "Kaggle Datasets — search 'business', 'sales', 'finance'", r:{label:"kaggle.com/datasets", url:"https://www.kaggle.com/datasets"} },
+        { t: "UCI Machine Learning Repository — clean, documented data", r:{label:"archive.ics.uci.edu", url:"https://archive.ics.uci.edu/"} },
+        { t: "Starter picks: retail sales, HR attrition, company financials" },
+        { t: "Best option: a real anonymized dataset from your own consulting work" },
+      ]},
+    ]
+  },
+  {
+    id: "p4",
+    label: "Phase 4",
+    title: "Applied Projects",
+    when: "Days 17–21",
+    intro: "Build 2–3 mini-projects that mirror real consulting deliverables end to end.",
+    days: [
+      { head: "Project 1", items: [
+        { t: "EDA report: load a messy CSV, clean it, summary stats + 3–4 charts, write findings" },
+      ]},
+      { head: "Project 2", items: [
+        { t: "Comparative analysis: merge two datasets, find trends via groupby" },
+      ]},
+      { head: "Project 3", items: [
+        { t: "Automated report: raw file in → cleaned Excel/pivot table out" },
+      ]},
+    ]
+  },
+  {
+    id: "later",
+    label: "Later",
+    title: "Deepen List",
+    when: "After this program",
+    intro: "Deliberately out of scope for now. Come back to these once the core loop is comfortable.",
+    days: [
+      { head: "Skip for now", items: [
+        { t: "Object-oriented programming (classes, inheritance)" },
+        { t: "Algorithm complexity / Big-O" },
+        { t: "Web frameworks & APIs (unless pulling from one — then just 'requests', 30 min)" },
+        { t: "Machine learning (scikit-learn)" },
+      ]},
+      { head: "Next up after this program", items: [
+        { t: "SQL fluency (if not already comfortable)" },
+        { t: "scikit-learn for predictive analytics" },
+        { t: "Advanced Pandas: multi-indexing, time series" },
+        { t: "Automation/scripting for recurring reports" },
+        { t: "polars — faster Pandas alternative for large data" },
+      ]},
+    ]
+  },
+];
+
+let checkedState = {};
+let activeTab = DATA[0].id;
+
+function itemKey(phaseId, dayIdx, itemIdx){ return phaseId + ":" + dayIdx + ":" + itemIdx; }
+
+function totalItemsInPhase(phase){
+  return phase.days.reduce((sum, d) => sum + d.items.length, 0);
+}
+function checkedItemsInPhase(phase){
+  let c = 0;
+  phase.days.forEach((d, di) => d.items.forEach((it, ii) => {
+    if (checkedState[itemKey(phase.id, di, ii)]) c++;
+  }));
+  return c;
+}
+function overallProgress(){
+  let total = 0, checked = 0;
+  DATA.forEach(p => { total += totalItemsInPhase(p); checked += checkedItemsInPhase(p); });
+  return total ? Math.round((checked/total)*100) : 0;
+}
+
+function renderTabs(){
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  DATA.forEach(phase => {
+    const total = totalItemsInPhase(phase);
+    const checked = checkedItemsInPhase(phase);
+    const pct = total ? Math.round((checked/total)*100) : 0;
+    const div = document.createElement('div');
+    div.className = 'tab' + (phase.id === activeTab ? ' active' : '') + (pct === 100 ? ' done' : '');
+    div.innerHTML = `<span>${phase.label}<br><span style="font-size:13px;font-family:Georgia,serif;">${phase.title}</span></span><span class="pct">${pct}%</span>`;
+    div.onclick = () => { activeTab = phase.id; render(); };
+    tabsEl.appendChild(div);
+  });
+}
+
+function renderPage(){
+  const phase = DATA.find(p => p.id === activeTab);
+  const el = document.getElementById('pageContent');
+  let html = `
+    <div class="phase-head">
+      <h2>${phase.title}</h2>
+      <div class="when mono">${phase.when}</div>
+    </div>
+    <p class="phase-intro">${phase.intro}</p>
+  `;
+
+  if (phase.id === 'later') {
+    html += `<div class="skip-box"><b>Deliberately deferred.</b> These aren't wrong to know — they're just not what unlocks value in weeks 1–4 for analyst work.</div>`;
+  }
+
+  phase.days.forEach((day, di) => {
+    html += `<div class="day-block"><div class="day-head">${day.head}</div>`;
+    day.items.forEach((item, ii) => {
+      const key = itemKey(phase.id, di, ii);
+      const checked = !!checkedState[key];
+      html += `
+        <div class="item ${checked ? 'checked' : ''}">
+          <input type="checkbox" id="${key}" ${checked ? 'checked' : ''} data-key="${key}">
+          <div>
+            <label for="${key}">${item.t}</label>
+            ${item.r ? `<span class="res">→ <a href="${item.r.url}" target="_blank" rel="noopener">${item.r.label}</a></span>` : ''}
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  });
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', async (e) => {
+      const key = e.target.dataset.key;
+      checkedState[key] = e.target.checked;
+      await saveState();
+      render();
+    });
+  });
+}
+
+function renderDial(){
+  const pct = overallProgress();
+  const circumference = 179; // approx arc length for the path used
+  const offset = circumference - (circumference * pct / 100);
+  document.getElementById('dialArc').setAttribute('stroke-dashoffset', offset);
+  document.getElementById('dialValue').textContent = pct + '%';
+}
+
+function render(){
+  renderTabs();
+  renderPage();
+  renderDial();
+}
+
+async function saveState(){
+  try{
+    localStorage.setItem('python-field-manual-progress', JSON.stringify(checkedState));
+  }catch(err){
+    console.error('Could not save progress', err);
+  }
+}
+
+async function loadState(){
+  try{
+    const raw = localStorage.getItem('python-field-manual-progress');
+    if (raw) {
+      checkedState = JSON.parse(raw);
+    }
+  }catch(err){
+    checkedState = {};
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  checkedState = {};
+  await saveState();
+  render();
+});
+
+(async function init(){
+  await loadState();
+  render();
+})();
+</script>
+</body>
+</html>
